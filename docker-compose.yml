@@ -1,0 +1,57 @@
+version: '2'
+services:
+    falcon-mysql:
+      image: mysql:5.7
+      container_name: falcon-mysql
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: test123456
+      volumes:
+        - ./mysql-data:/var/lib/mysql
+        - /etc/localtime:/etc/localtime
+      ports:
+        - "3306:33060"
+    falcon-redis:
+      image: redis:4-alpine3.8
+      container_name: falcon-redis
+      ports:
+        - "6379:6379"
+    falcon-plus:
+      image: openfalcon/falcon-plus:v0.3
+      container_name: falcon-plus
+      links:
+        - falcon-mysql:db.falcon
+        - falcon-redis:redis.falcon
+      ports:
+        - "8433:8433"
+        - "8080:8080"
+      environment:
+        MYSQL_PORT: root:test123456@tcp\(db.falcon:3306\)
+        REDIS_PORT: redis.falcon:6379
+      volumes:
+        - ./open-falcon/data:/open-falcon/data 
+        - ./open-falcon/logs:/open-falcon/logs    
+    falcon-dashboard:
+      image: openfalcon/falcon-dashboard:v0.2.1
+      container_name: falcon-dashboard
+      ports:
+        - "8081:8081"
+      links:
+        - falcon-mysql:db.falcon
+        #- falcon-plus:api.falcon
+      working_dir: /open-falcon/dashboard
+      command: 
+        - ./control startfg
+      environment:
+        API_ADDR: http://falcon-plus:8080/api/v1
+        PORTAL_DB_HOST: db.falcon
+        PORTAL_DB_PORT: 3306
+        PORTAL_DB_USER: root
+        PORTAL_DB_PASS: test123456
+        PORTAL_DB_NAME: falcon_portal
+        ALARM_DB_HOST: db.falcon
+        ALARM_DB_PORT: 3306
+        ALARM_DB_USER: root
+        ALARM_DB_PASS: test123456
+        ALARM_DB_NAME: alarms
+     
