@@ -38,12 +38,12 @@ services:
         - "8081:8081"
       links:
         - falcon-mysql:db.falcon
-        #- falcon-plus:api.falcon
+        - falcon-plus:api.falcon
       working_dir: /open-falcon/dashboard
       command: 
         - ./control startfg
       environment:
-        API_ADDR: http://falcon-plus:8080/api/v1
+        API_ADDR: http://api.falcon:8080/api/v1
         PORTAL_DB_HOST: db.falcon
         PORTAL_DB_PORT: 3306
         PORTAL_DB_USER: root
